@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +19,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "produto-servico")
+@Table(name = "produtos_servicos")
 public class ProdutoServico {
     
     /** Identificador único do produto/serviço. */
@@ -31,7 +32,7 @@ public class ProdutoServico {
     private String nome;
 
     /** Preço unitário do produto ou serviço, obrigatório. */
-    @NotBlank
+    @NotNull
     private Float preco;
 
 }

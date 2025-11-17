@@ -7,7 +7,6 @@ import java.util.UUID;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -23,8 +22,7 @@ public class Pedido {
     @GeneratedValue
     private UUID id;
 
-    @OneToMany
-    private List<Item> itens = new ArrayList<>();
+    private List<UUID> itens = new ArrayList<>();
 
     @NotNull
     private Float precoBase;

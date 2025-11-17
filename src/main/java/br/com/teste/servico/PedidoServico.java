@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.teste.modelo.Item;
 import br.com.teste.modelo.Pedido;
+import br.com.teste.repositorio.ItemRepositorio;
 import br.com.teste.repositorio.PedidoRepositorio;
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,9 @@ public class PedidoServico {
     /** O repositório de pedidos. */
     private final PedidoRepositorio pedidoRepositorio;
 
+    /** Repositório de itens. */
+    private final ItemRepositorio itemRepositorio;
+
     /**
      * Recalcula o valor final do pedido com base nos itens, preço base e desconto.
      * 
@@ -30,8 +34,17 @@ public class PedidoServico {
      */
     private void recalcular(Pedido pedido) {
         float soma = 0f;
-        for (Item i : pedido.getItens()) soma += i.getPreco();
+        Optional<Item> optional;
+        Item item;
 
+        for (UUID id : pedido.getItens()) {
+            optional = itemRepositorio.findById(id); 
+
+            if (optional.isPresent()) {
+                item = optional.get();
+                soma += item.getPreco();
+            } 
+        }
         pedido.setPrecoFinal(
             pedido.getPrecoBase() - pedido.getDesconto() + soma
         );

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @CrossOrigin("*")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/alunos")
+@RequestMapping("/produtos-servicos")
 public class ProdutoServicoControle {
     
     /** O serviço de produto/serviço. */
@@ -86,7 +87,7 @@ public class ProdutoServicoControle {
      * @param produtoServico o objeto contendo os campos a serem atualizados
      * @return uma resposta contendo o objeto modificado
      */
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ProdutoServico> alterarParcial(
         @PathVariable UUID id, @RequestBody ProdutoServico produtoServico
     ) {
