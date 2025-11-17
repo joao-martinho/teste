@@ -7,7 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import br.com.teste.modelo.Item;
 
+/**
+ * Repositório responsável pelo acesso e manipulação dos dados de item no banco.
+ */
 @Repository
-public interface ItemRepositorio extends JpaRepository<Item, UUID> { 
-    
+public interface ItemRepositorio extends JpaRepository<Item, UUID> {
+
 }

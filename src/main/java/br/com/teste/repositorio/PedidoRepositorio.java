@@ -3,9 +3,13 @@
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import br.com.teste.modelo.Pedido;
 
-public interface PedidoRepositorio extends JpaRepository<Pedido, UUID> {
-    
+/**
+ * Repositório responsável pelo acesso aos dados da entidade pedido.
+ */
+@Repository
+public interface PedidoRepositorio extends JpaRepository<Pedido, UUID> {    
 }
