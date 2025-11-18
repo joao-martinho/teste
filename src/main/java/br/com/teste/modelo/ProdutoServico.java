@@ -39,4 +39,8 @@ public class ProdutoServico {
     @NotNull
     private Boolean ehProduto;
 
+    /** Representa se o objeto está ou não desativado. */
+    @NotNull
+    private Boolean estahDesativado;
+
 }

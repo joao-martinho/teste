@@ -31,6 +31,9 @@ public class Pedido {
     /** Lista de IDs que referenciam itens. */
     private List<UUID> itens = new ArrayList<>();
 
+    /** Lista de IDs que referenciam produtos ou serviços. */
+    private List<UUID> produtoServicos = new ArrayList<>();
+
     /** O nome do cliente, que não corresponde e um objeto no banco de dados. */
     @NotBlank
     private String cliente;
@@ -46,5 +49,9 @@ public class Pedido {
     /** O preço a ser pago pelo cliente, depois de aplicado o desconto. */
     @NotNull
     private Float precoFinal;
+
+    /** A situação do pedido: aberto (true) ou fechado (false). */
+    @NotNull
+    private Boolean estahAberto;
 
 }
