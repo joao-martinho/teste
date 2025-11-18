@@ -1,4 +1,107 @@
 document.addEventListener("DOMContentLoaded", function(){
+  const tabelaPedidos = document.getElementById("tabelaPedidos");
+  const corpoTabela = tabelaPedidos.querySelector("tbody");
+  const botaoNovo = document.getElementById("btnNovoPedido");
+  const modal = new bootstrap.Modal(document.getElementById("modalPedido"));
+  const formulario = document.getElementById("formPedido");
+  const selectProduto = document.getElementById("selectProduto");
+  const listaItens = document.getElementById("listaItens");
+  let produtosCache = [];
+  let produtosUsados = [];
+  let pedidoAtual = null;
+
+  async function carregarProdutos(){
+    const r = await fetch("/produtos");
+    produtosCache = await r.json();
+    selectProduto.innerHTML = "";
+    produtosCache.forEach(p => {
+      const o = document.createElement("option");
+      o.value = p.id;
+      o.dataset.nome = p.nome;
+      o.dataset.preco = p.preco;
+      o.textContent = p.nome + " - R$ " + p.preco;
+      selectProduto.appendChild(o);
+    });
+  }
+
+  function renderizarItens(){
+    listaItens.innerHTML = "";
+    produtosUsados.forEach(u => {
+      const produto = produtosCache.find(p => p.id === u);
+      if(produto){
+        const li = document.createElement("li");
+        li.textContent = produto.nome + " (R$ " + produto.preco + ")";
+        listaItens.appendChild(li);
+      }
+    });
+  }
+
+  async function carregarPedidos(){
+    const r = await fetch("/pedidos");
+    const dados = await r.json();
+    corpoTabela.innerHTML = "";
+    dados.forEach(p => {
+      const tr = document.createElement("tr");
+      const tdId = document.createElement("td");
+      tdId.textContent = p.id;
+      const tdAberto = document.createElement("td");
+      tdAberto.textContent = p.estahAberto ? "Aberto" : "Fechado";
+      const tdAcoes = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.textContent = "Ver";
+      btn.className = "btn btn-primary btn-sm";
+      btn.addEventListener("click", function(){ abrirModalEdicao(p); });
+      tdAcoes.appendChild(btn);
+      tr.appendChild(tdId);
+      tr.appendChild(tdAberto);
+      tr.appendChild(tdAcoes);
+      corpoTabela.appendChild(tr);
+    });
+  }
+
+  function abrirModalEdicao(p){
+    pedidoAtual = p;
+    produtosUsados = [...p.produtoServicos];
+    renderizarItens();
+    modal.show();
+  }
+
+  botaoNovo.addEventListener("click", function(){
+    pedidoAtual = null;
+    produtosUsados = [];
+    renderizarItens();
+    modal.show();
+  });
+
+  document.getElementById("btnAdicionarItem").addEventListener("click", function(){
+    const id = selectProduto.value;
+    if(!id) return;
+    produtosUsados.push(id);
+    renderizarItens();
+  });
+
+  formulario.addEventListener("submit", async function(e){
+    e.preventDefault();
+    const payload = { produtoServicos: produtosUsados };
+    let url = "/pedidos";
+    let metodo = "POST";
+    if(pedidoAtual){
+      url = "/pedidos/" + pedidoAtual.id;
+      metodo = "PUT";
+    }
+    await fetch(url,{
+      method: metodo,
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    modal.hide();
+    produtosUsados = [];
+    await carregarPedidos();
+  });
+
+  carregarProdutos();
+  carregarPedidos();
+});document.addEventListener("DOMContentLoaded", function(){
   const formularioProduto = document.querySelectorAll(".card form")[0]
   const inputNomeProduto = document.getElementById("nomeProduto")
   const inputPrecoProduto = document.getElementById("precoProduto")
@@ -19,7 +122,8 @@ document.addEventListener("DOMContentLoaded", function(){
   const tabelaItensCorpo = modal.querySelector("tbody")
 
   let itensDoPedido = []
-  let produtosCache = [] // cache dos produtos/serviços carregados
+  let produtosCache = []
+  let produtosUsados = []
   let indiceItemEditando = null
 
   async function buscarProdutosServicos(){
@@ -101,12 +205,14 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioProduto.classList.add("was-validated")
       return
     }
+
     const payload = {
       nome: inputNomeProduto.value.trim(),
       preco: Number(inputPrecoProduto.value),
       ehProduto: !inputIsServico.checked,
       estahDesativado: inputIsInativo.checked
     }
+
     try{
       if(produtoEditandoId){
         const r = await fetch(`/produtos-servicos/${produtoEditandoId}`, {
@@ -124,6 +230,7 @@ document.addEventListener("DOMContentLoaded", function(){
         })
         if(!r.ok) throw new Error()
       }
+
       formularioProduto.reset()
       formularioProduto.classList.remove("was-validated")
       await buscarProdutosServicos()
@@ -161,6 +268,7 @@ document.addEventListener("DOMContentLoaded", function(){
     tabelaPedidosCorpo.innerHTML = ""
     dados.forEach(p => {
       const tr = document.createElement("tr")
+
       const tdCliente = document.createElement("td")
       tdCliente.textContent = p.cliente
       const tdBase = document.createElement("td")
@@ -169,27 +277,33 @@ document.addEventListener("DOMContentLoaded", function(){
       tdDesc.textContent = `${Number(p.desconto).toFixed(2)}%`
       const tdTotal = document.createElement("td")
       tdTotal.textContent = Number(p.precoFinal).toFixed(2)
+
       const tdAcoes = document.createElement("td")
       const btnVer = document.createElement("button")
       btnVer.className = "btn btn-sm btn-primary me-2"
       btnVer.textContent = "Ver detalhes"
       btnVer.addEventListener("click", () => verPedido(p))
+
       const btnEditar = document.createElement("button")
       btnEditar.className = "btn btn-sm btn-warning me-2"
       btnEditar.textContent = "Editar"
       btnEditar.addEventListener("click", () => iniciarEdicaoPedido(p))
+
       const btnExcluir = document.createElement("button")
       btnExcluir.className = "btn btn-sm btn-danger"
       btnExcluir.textContent = "Excluir"
       btnExcluir.addEventListener("click", () => excluirPedido(p.id))
+
       tdAcoes.appendChild(btnVer)
       tdAcoes.appendChild(btnEditar)
       tdAcoes.appendChild(btnExcluir)
+
       tr.appendChild(tdCliente)
       tr.appendChild(tdBase)
       tr.appendChild(tdDesc)
       tr.appendChild(tdTotal)
       tr.appendChild(tdAcoes)
+
       tabelaPedidosCorpo.appendChild(tr)
     })
   }
@@ -310,6 +424,8 @@ document.addEventListener("DOMContentLoaded", function(){
     const ehProduto = opt.dataset.ehproduto === "true"
     const quantidade = Math.max(1, Math.floor(Number(inputQuantidade.value) || 1))
 
+    produtosUsados.push(idProd)
+
     if(indiceItemEditando === null){
       itensDoPedido.push({
         id: null,
@@ -368,9 +484,7 @@ document.addEventListener("DOMContentLoaded", function(){
       const btnEditar = document.createElement("button")
       btnEditar.className = "btn btn-sm btn-warning me-2"
       btnEditar.textContent = "Editar"
-      btnEditar.addEventListener("click", () => {
-        iniciarEdicaoItem(idx)
-      })
+      btnEditar.addEventListener("click", () => iniciarEdicaoItem(idx))
 
       const btnRemover = document.createElement("button")
       btnRemover.className = "btn btn-sm btn-danger"
@@ -399,6 +513,7 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioPedido.classList.add("was-validated")
       return
     }
+
     if(itensDoPedido.length === 0) return
 
     const descontoPercentual = Number(inputDesconto.value) || 0
@@ -406,6 +521,7 @@ document.addEventListener("DOMContentLoaded", function(){
     const precoFinal = precoBase * (1 - descontoPercentual / 100)
 
     const idsAchatados = []
+
     for(const item of itensDoPedido){
       if(!item.id){
         const r = await fetch("/itens", {
@@ -434,6 +550,7 @@ document.addEventListener("DOMContentLoaded", function(){
       precoBase: Number(precoBase.toFixed(2)),
       precoFinal: Number(precoFinal.toFixed(2)),
       itens: idsAchatados,
+      produtoServicos: Array.from(new Set(itensDoPedido.map(i => i.produtoServicoId))),
       estahAberto: true
     }
 
@@ -458,6 +575,8 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioPedido.reset()
       formularioPedido.classList.remove("was-validated")
       itensDoPedido = []
+      produtosUsados = []
+      produtosCache = []
       tabelaItensCorpo.innerHTML = ""
       await buscarPedidos()
     } catch(err){}
@@ -468,6 +587,7 @@ document.addEventListener("DOMContentLoaded", function(){
     inputCliente.value = p.cliente
     inputDesconto.value = Number(p.desconto).toFixed(2)
     itensDoPedido = []
+    produtosUsados = []
 
     try{
       if(Array.isArray(p.itens) && p.itens.length){
@@ -489,11 +609,16 @@ document.addEventListener("DOMContentLoaded", function(){
         detalhes.forEach(d => {
           if(d){
             const qtd = counts[d.id]
+
             const produtoServicoId = inferirProdutoServicoIdPorItem({
               nome: d.nome,
               preco: d.preco,
               ehProduto: d.ehProduto
             })
+
+            if(produtoServicoId){
+              for(let x = 0; x < qtd; x++) produtosUsados.push(produtoServicoId)
+            }
 
             itensDoPedido.push({
               id: d.id,
@@ -514,6 +639,15 @@ document.addEventListener("DOMContentLoaded", function(){
       top: formularioPedido.offsetTop,
       behavior: "smooth"
     })
+  }
+
+  function inferirProdutoServicoIdPorItem(item){
+    for(const p of produtosCache){
+      if(p.nome === item.nome && Number(p.preco) === Number(item.preco) && p.ehProduto === item.ehProduto){
+        return p.id
+      }
+    }
+    return null
   }
 
   function iniciarEdicaoItem(indice){
