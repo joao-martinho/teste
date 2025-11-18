@@ -22,51 +22,41 @@ document.addEventListener("DOMContentLoaded", function(){
   async function buscarProdutosServicos(){
     try{
       const r = await fetch("/produtos-servicos")
-      if(!r.ok) throw new Error("Erro ao buscar produtos")
+      if(!r.ok) throw new Error()
       const dados = await r.json()
       populaTabelaProdutos(dados)
       populaSelectItens(dados)
-    } catch(e){
-      console.error(e)
-    }
+    } catch(e){}
   }
 
   function populaTabelaProdutos(dados){
     tabelaProdutosCorpo.innerHTML = ""
     dados.forEach(p => {
       const tr = document.createElement("tr")
-
       const tdNome = document.createElement("td")
       tdNome.textContent = p.nome
-
       const tdTipo = document.createElement("td")
       const badge = document.createElement("span")
       badge.className = "badge " + (p.ehProduto ? "bg-primary" : "bg-secondary")
       badge.textContent = p.ehProduto ? "Produto" : "Serviço"
       tdTipo.appendChild(badge)
-
       const tdPreco = document.createElement("td")
       tdPreco.textContent = Number(p.preco).toFixed(2)
-
       const tdAcoes = document.createElement("td")
       const btnEditar = document.createElement("button")
       btnEditar.className = "btn btn-sm btn-warning me-2"
       btnEditar.textContent = "Editar"
       btnEditar.addEventListener("click", () => iniciarEdicaoProduto(p))
-
       const btnExcluir = document.createElement("button")
       btnExcluir.className = "btn btn-sm btn-danger"
       btnExcluir.textContent = "Excluir"
       btnExcluir.addEventListener("click", () => excluirProduto(p.id))
-
       tdAcoes.appendChild(btnEditar)
       tdAcoes.appendChild(btnExcluir)
-
       tr.appendChild(tdNome)
       tr.appendChild(tdTipo)
       tr.appendChild(tdPreco)
       tr.appendChild(tdAcoes)
-
       tabelaProdutosCorpo.appendChild(tr)
     })
   }
@@ -86,18 +76,15 @@ document.addEventListener("DOMContentLoaded", function(){
 
   formularioProduto.addEventListener("submit", async function(e){
     e.preventDefault()
-
     if(!formularioProduto.checkValidity()){
       formularioProduto.classList.add("was-validated")
       return
     }
-
     const payload = {
       nome: inputNomeProduto.value.trim(),
       preco: Number(inputPrecoProduto.value),
       ehProduto: !inputIsServico.checked
     }
-
     try{
       if(produtoEditandoId){
         const r = await fetch(`/produtos-servicos/${produtoEditandoId}`, {
@@ -105,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function(){
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify(payload)
         })
-        if(!r.ok) throw new Error("Erro ao atualizar")
+        if(!r.ok) throw new Error()
         produtoEditandoId = null
       } else {
         const r = await fetch("/produtos-servicos", {
@@ -113,16 +100,13 @@ document.addEventListener("DOMContentLoaded", function(){
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify(payload)
         })
-        if(!r.ok) throw new Error("Erro ao criar")
+        if(!r.ok) throw new Error()
       }
-
       formularioProduto.reset()
       formularioProduto.classList.remove("was-validated")
       await buscarProdutosServicos()
-
     } catch(err){
       alert("Falha ao salvar produto/serviço")
-      console.error(err)
     }
   })
 
@@ -136,66 +120,57 @@ document.addEventListener("DOMContentLoaded", function(){
 
   async function excluirProduto(id){
     if(!confirm("Confirma exclusão?")) return
-
     try{
       const r = await fetch(`/produtos-servicos/${id}`, {method:"DELETE"})
-      if(!r.ok) throw new Error("Erro ao excluir")
+      if(!r.ok) throw new Error()
       await buscarProdutosServicos()
     } catch(e){
       alert("Falha ao excluir produto/serviço")
-      console.error(e)
     }
   }
 
   async function buscarPedidos(){
     try{
       const r = await fetch("/pedidos")
-      if(!r.ok) throw new Error("Erro ao buscar pedidos")
+      if(!r.ok) throw new Error()
       const dados = await r.json()
       populaTabelaPedidos(dados)
-    } catch(e){
-      console.error(e)
-    }
+    } catch(e){}
   }
 
   function populaTabelaPedidos(dados){
     tabelaPedidosCorpo.innerHTML = ""
-
     dados.forEach(p => {
       const tr = document.createElement("tr")
-
       const tdCliente = document.createElement("td")
       tdCliente.textContent = p.cliente
-
-      const tdItens = document.createElement("td")
-      tdItens.textContent = Array.isArray(p.itens) ? p.itens.length : 0
-
-      const tdDesconto = document.createElement("td")
-      tdDesconto.textContent = Number(p.desconto).toFixed(2)
-
+      const tdBase = document.createElement("td")
+      tdBase.textContent = Number(p.precoBase).toFixed(2)
+      const tdDesc = document.createElement("td")
+      tdDesc.textContent = `${Number(p.desconto).toFixed(2)}%`
       const tdTotal = document.createElement("td")
       tdTotal.textContent = Number(p.precoFinal).toFixed(2)
-
       const tdAcoes = document.createElement("td")
       const btnVer = document.createElement("button")
       btnVer.className = "btn btn-sm btn-primary me-2"
       btnVer.textContent = "Ver"
       btnVer.addEventListener("click", () => verPedido(p))
-
+      const btnEditar = document.createElement("button")
+      btnEditar.className = "btn btn-sm btn-warning me-2"
+      btnEditar.textContent = "Editar"
+      btnEditar.addEventListener("click", () => iniciarEdicaoPedido(p))
       const btnExcluir = document.createElement("button")
       btnExcluir.className = "btn btn-sm btn-danger"
       btnExcluir.textContent = "Excluir"
       btnExcluir.addEventListener("click", () => excluirPedido(p.id))
-
       tdAcoes.appendChild(btnVer)
+      tdAcoes.appendChild(btnEditar)
       tdAcoes.appendChild(btnExcluir)
-
       tr.appendChild(tdCliente)
-      tr.appendChild(tdItens)
-      tr.appendChild(tdDesconto)
+      tr.appendChild(tdBase)
+      tr.appendChild(tdDesc)
       tr.appendChild(tdTotal)
       tr.appendChild(tdAcoes)
-
       tabelaPedidosCorpo.appendChild(tr)
     })
   }
@@ -207,80 +182,69 @@ document.addEventListener("DOMContentLoaded", function(){
       `Preço base: ${Number(p.precoBase).toFixed(2)}\n` +
       `Preço final: ${Number(p.precoFinal).toFixed(2)}\n` +
       `Itens:\n`
-
     if(Array.isArray(p.itens) && p.itens.length){
+      const counts = p.itens.reduce((acc,id)=>{acc[id]=(acc[id]||0)+1; return acc},{})
+      const uniqueIds = Object.keys(counts)
       try{
-        const detalhes = await Promise.all(p.itens.map(async (uuid) => {
+        const detalhes = await Promise.all(uniqueIds.map(async id => {
           try{
-            const r = await fetch(`/produtos-servicos/${uuid}`)
+            const r = await fetch(`/produtos-servicos/${id}`)
             if(!r.ok) return null
             return await r.json()
           } catch(e){
             return null
           }
         }))
-
         detalhes.forEach(d => {
           if(d){
-            texto += ` - ${d.nome} — R$ ${Number(d.preco).toFixed(2)} (${d.ehProduto ? "produto" : "serviço"})\n`
+            const qtd = counts[d.id] || 1
+            texto += ` - ${d.nome} — ${qtd} × R$ ${Number(d.preco).toFixed(2)} = R$ ${Number((d.preco * qtd).toFixed(2))} (${d.ehProduto ? "produto" : "serviço"})\n`
           } else {
             texto += " - (item não encontrado)\n"
           }
         })
       } catch(e){
-        console.error(e)
-        texto += " (erro ao recuperar detalhes dos itens)\n"
+        texto += " (erro ao recuperar detalhes)\n"
       }
     } else {
       texto += " (sem itens)\n"
     }
-
     alert(texto)
   }
 
   async function excluirPedido(id){
     if(!confirm("Confirma exclusão do pedido?")) return
-
     try{
       const r = await fetch(`/pedidos/${id}`, {method:"DELETE"})
-      if(!r.ok) throw new Error("Erro ao excluir pedido")
+      if(!r.ok) throw new Error()
       await buscarPedidos()
     } catch(e){
       alert("Falha ao excluir pedido")
-      console.error(e)
     }
   }
 
   modal.addEventListener("show.bs.modal", function(){
-    itensDoPedido = []
-    tabelaItensCorpo.innerHTML = ""
     inputQuantidade.value = ""
+    modal.querySelector("form").classList.remove("was-validated")
   })
 
   modal.querySelector("form").addEventListener("submit", function(e){
     e.preventDefault()
-
     if(!modal.querySelector("form").checkValidity()){
       modal.querySelector("form").classList.add("was-validated")
       return
     }
-
     const idSelecionado = selectProduto.value
     if(!idSelecionado) return
-
     const opcao = selectProduto.querySelector(`option[value="${idSelecionado}"]`)
-    const nome = opcao.dataset.nome || opcao.textContent
-    const preco = Number(opcao.dataset.preco || 0)
-    const ehProduto = (opcao.dataset.ehproduto === "true")
-
+    const nome = opcao.dataset.nome
+    const preco = Number(opcao.dataset.preco)
+    const ehProduto = opcao.dataset.ehproduto === "true"
     const quantidade = Math.max(1, Math.floor(Number(inputQuantidade.value) || 1))
-
     const existenteIndex = itensDoPedido.findIndex(x => x.id === idSelecionado)
-
     if(existenteIndex > -1){
       itensDoPedido[existenteIndex].quantidade += quantidade
-      itensDoPedido[existenteIndex].subtotal =
-        Number((itensDoPedido[existenteIndex].quantidade * preco).toFixed(2))
+      itensDoPedido[existenteIndex].subtotal = Number((itensDoPedido[existenteIndex].quantidade * preco).toFixed(2))
     } else {
       itensDoPedido.push({
         id: idSelecionado,
@@ -291,9 +255,7 @@ document.addEventListener("DOMContentLoaded", function(){
         subtotal: Number((quantidade * preco).toFixed(2))
       })
     }
-
     renderizarTabelaItens()
-
     modal.querySelector("form").classList.remove("was-validated")
     selectProduto.value = ""
     inputQuantidade.value = ""
@@ -301,22 +263,16 @@ document.addEventListener("DOMContentLoaded", function(){
 
   function renderizarTabelaItens(){
     tabelaItensCorpo.innerHTML = ""
-
     itensDoPedido.forEach((item, idx) => {
       const tr = document.createElement("tr")
-
       const tdNome = document.createElement("td")
       tdNome.textContent = item.nome
-
       const tdQtd = document.createElement("td")
       tdQtd.textContent = item.quantidade
-
       const tdPreco = document.createElement("td")
       tdPreco.textContent = item.preco.toFixed(2)
-
       const tdSubtotal = document.createElement("td")
       tdSubtotal.textContent = item.subtotal.toFixed(2)
-
       const tdAcoes = document.createElement("td")
       const btnRemover = document.createElement("button")
       btnRemover.className = "btn btn-sm btn-danger"
@@ -326,13 +282,11 @@ document.addEventListener("DOMContentLoaded", function(){
         renderizarTabelaItens()
       })
       tdAcoes.appendChild(btnRemover)
-
       tr.appendChild(tdNome)
       tr.appendChild(tdQtd)
       tr.appendChild(tdPreco)
       tr.appendChild(tdSubtotal)
       tr.appendChild(tdAcoes)
-
       tabelaItensCorpo.appendChild(tr)
     })
   }
@@ -342,18 +296,24 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioPedido.classList.add("was-validated")
       return
     }
-
     if(itensDoPedido.length === 0){
       alert("Inclua ao menos um item no pedido.")
       return
     }
-
+    const desconto = Number(inputDesconto.value) || 0
+    const precoBasePedido = itensDoPedido.reduce((total, item) => total + item.subtotal, 0)
+    const precoFinalPedido = precoBasePedido - (precoBasePedido * (desconto / 100))
+    const itensAchatados = []
+    itensDoPedido.forEach(item => {
+      for(let i=0;i<item.quantidade;i++) itensAchatados.push(item.id)
+    })
     const payload = {
       cliente: inputCliente.value.trim(),
-      desconto: Number(inputDesconto.value),
-      itens: itensDoPedido.map(i => i.id)
+      desconto: desconto,
+      precoBase: Number(precoBasePedido.toFixed(2)),
+      precoFinal: Number(precoFinalPedido.toFixed(2)),
+      itens: itensAchatados
     }
-
     try{
       if(pedidoEditandoId){
         const r = await fetch(`/pedidos/${pedidoEditandoId}`, {
@@ -361,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function(){
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify(payload)
         })
-        if(!r.ok) throw new Error("Erro ao atualizar pedido")
+        if(!r.ok) throw new Error()
         pedidoEditandoId = null
       } else {
         const r = await fetch("/pedidos", {
@@ -369,19 +329,15 @@ document.addEventListener("DOMContentLoaded", function(){
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify(payload)
         })
-        if(!r.ok) throw new Error("Erro ao criar pedido")
+        if(!r.ok) throw new Error()
       }
-
       formularioPedido.reset()
       formularioPedido.classList.remove("was-validated")
       itensDoPedido = []
       tabelaItensCorpo.innerHTML = ""
-
       await buscarPedidos()
-
     } catch(err){
       alert("Falha ao salvar pedido")
-      console.error(err)
     }
   }
 
@@ -389,47 +345,33 @@ document.addEventListener("DOMContentLoaded", function(){
     pedidoEditandoId = p.id
     inputCliente.value = p.cliente
     inputDesconto.value = Number(p.desconto).toFixed(2)
-
     itensDoPedido = []
-
     if(Array.isArray(p.itens) && p.itens.length){
+      const counts = p.itens.reduce((acc,id)=>{acc[id]=(acc[id]||0)+1; return acc},{})
+      const uniqueIds = Object.keys(counts)
       try{
-        const detalhes = await Promise.all(p.itens.map(async (uuid) => {
+        const detalhes = await Promise.all(uniqueIds.map(async id => {
           try{
-            const r = await fetch(`/produtos-servicos/${uuid}`)
-            if(!r.ok) return null
+            const r = await fetch(`/produtos-servicos/${id}`)
+            if(!r.ok) return {id, nome: '(item não encontrado)', preco:0, ehProduto:false}
             return await r.json()
           } catch(e){
-            return null
+            return {id, nome: '(item não encontrado)', preco:0, ehProduto:false}
           }
         }))
-
         detalhes.forEach(d => {
-          if(d){
-            itensDoPedido.push({
-              id: d.id,
-              nome: d.nome,
-              preco: Number(d.preco),
-              quantidade: 1,
-              subtotal: Number(d.preco),
-              ehProduto: d.ehProduto
-            })
-          } else {
-            itensDoPedido.push({
-              id: null,
-              nome: "(item não encontrado)",
-              preco: 0,
-              quantidade: 1,
-              subtotal: 0,
-              ehProduto: false
-            })
-          }
+          const qtd = counts[d.id] || 1
+          itensDoPedido.push({
+            id: d.id,
+            nome: d.nome,
+            preco: Number(d.preco),
+            ehProduto: d.ehProduto,
+            quantidade: qtd,
+            subtotal: Number((Number(d.preco) * qtd).toFixed(2))
+          })
         })
-      } catch(e){
-        console.error(e)
-      }
+      } catch(e){}
     }
-
     renderizarTabelaItens()
     window.scrollTo({top: formularioPedido.offsetTop, behavior:"smooth"})
   }
