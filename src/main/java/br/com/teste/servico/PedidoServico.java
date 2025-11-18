@@ -28,36 +28,12 @@ public class PedidoServico {
     private final ItemRepositorio itemRepositorio;
 
     /**
-     * Recalcula o valor final do pedido com base nos itens, preço base e desconto.
-     * 
-     * @param pedido o pedido cujos valores serão atualizados
-     */
-    private void recalcular(Pedido pedido) {
-        float soma = 0f;
-        Optional<Item> optional;
-        Item item;
-
-        for (UUID id : pedido.getItens()) {
-            optional = itemRepositorio.findById(id); 
-
-            if (optional.isPresent()) {
-                item = optional.get();
-                soma += item.getPreco();
-            } 
-        }
-        pedido.setPrecoFinal(
-            pedido.getPrecoBase() - pedido.getDesconto() + soma
-        );
-    }
-
-    /**
      * Cadastra um pedido.
      * 
      * @param pedido o pedido enviado pelo cliente
      * @return uma resposta contendo o pedido criado
      */
     public ResponseEntity<Pedido> cadastrar(Pedido pedido) {
-        recalcular(pedido);
         return new ResponseEntity<>(
             pedidoRepositorio.save(pedido), HttpStatus.CREATED
         );
@@ -100,7 +76,6 @@ public class PedidoServico {
         Optional<Pedido> optional = pedidoRepositorio.findById(id);
         if (optional.isPresent()) {
             pedido.setId(id);
-            recalcular(pedido);
             return new ResponseEntity<>(
                 pedidoRepositorio.save(pedido), HttpStatus.OK
             );
@@ -125,8 +100,7 @@ public class PedidoServico {
             if (pedido.getCliente() != null) existente.setCliente(pedido.getCliente());
             if (pedido.getPrecoBase() != null) existente.setPrecoBase(pedido.getPrecoBase());
             if (pedido.getDesconto() != null) existente.setDesconto(pedido.getDesconto());
-
-            recalcular(existente);
+            if (pedido.getPrecoFinal() != null) existente.setPrecoFinal(pedido.getPrecoFinal());
 
             return new ResponseEntity<>(
                 pedidoRepositorio.save(existente), HttpStatus.OK

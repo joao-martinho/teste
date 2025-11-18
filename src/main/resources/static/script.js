@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioProduto.classList.remove("was-validated")
       await buscarProdutosServicos()
     } catch(err){
-      alert("Falha ao salvar produto/serviço")
+      console.log("Falha ao salvar produto/serviço")
     }
   })
 
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function(){
       if(!r.ok) throw new Error()
       await buscarProdutosServicos()
     } catch(e){
-      alert("Falha ao excluir produto/serviço")
+      console.log("Falha ao excluir produto/serviço")
     }
   }
 
@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function(){
       if(!r.ok) throw new Error()
       await buscarPedidos()
     } catch(e){
-      alert("Falha ao excluir pedido")
+      console.log("Falha ao excluir pedido")
     }
   }
 
@@ -296,24 +296,29 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioPedido.classList.add("was-validated")
       return
     }
+
     if(itensDoPedido.length === 0){
-      alert("Inclua ao menos um item no pedido.")
       return
     }
-    const desconto = Number(inputDesconto.value) || 0
+
+    const descontoPercentual = Number(inputDesconto.value) || 0
     const precoBasePedido = itensDoPedido.reduce((total, item) => total + item.subtotal, 0)
-    const precoFinalPedido = precoBasePedido - (precoBasePedido * (desconto / 100))
+    const fatorDesconto = descontoPercentual / 100
+    const precoFinalPedido = precoBasePedido * (1 - fatorDesconto)
+
     const itensAchatados = []
     itensDoPedido.forEach(item => {
-      for(let i=0;i<item.quantidade;i++) itensAchatados.push(item.id)
+      for(let i = 0; i < item.quantidade; i++) itensAchatados.push(item.id)
     })
+
     const payload = {
       cliente: inputCliente.value.trim(),
-      desconto: desconto,
+      desconto: descontoPercentual,
       precoBase: Number(precoBasePedido.toFixed(2)),
       precoFinal: Number(precoFinalPedido.toFixed(2)),
       itens: itensAchatados
     }
+
     try{
       if(pedidoEditandoId){
         const r = await fetch(`/pedidos/${pedidoEditandoId}`, {
@@ -331,13 +336,14 @@ document.addEventListener("DOMContentLoaded", function(){
         })
         if(!r.ok) throw new Error()
       }
+
       formularioPedido.reset()
       formularioPedido.classList.remove("was-validated")
       itensDoPedido = []
       tabelaItensCorpo.innerHTML = ""
       await buscarPedidos()
     } catch(err){
-      alert("Falha ao salvar pedido")
+      console.log("Falha ao salvar pedido")
     }
   }
 
