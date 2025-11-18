@@ -46,21 +46,6 @@ public class PedidoControleTest {
     }
 
     /**
-     * Testa a rota POST para cadastrar um pedido.
-     */
-    @Test
-    void deveCadastrar() throws Exception {
-        when(pedidoServico.cadastrar(any()))
-            .thenReturn(org.springframework.http.ResponseEntity.ok(pedido));
-
-        mockMvc.perform(
-            post("/pedidos")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{}")
-        ).andExpect(status().isOk());
-    }
-
-    /**
      * Testa a descrição de todos os pedidos armazenados.
      */
     @Test

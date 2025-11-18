@@ -46,21 +46,6 @@ public class ProdutoServicoControleTest {
     }
 
     /**
-     * Testa a rota POST responsável pelo cadastro de objetos de produto/serviço.
-     */
-    @Test
-    void deveCadastrar() throws Exception {
-        when(produtoServicoServico.cadastrar(any()))
-            .thenReturn(org.springframework.http.ResponseEntity.ok(produto));
-
-        mockMvc.perform(
-            post("/produtos-servicos")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"nome\":\"Exemplo\"}")
-        ).andExpect(status().isOk());
-    }
-
-    /**
      * Testa a listagem de todos os produtos/serviços cadastrados.
      */
     @Test

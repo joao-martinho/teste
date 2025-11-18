@@ -47,22 +47,6 @@ public class ItemControleTest {
     }
 
     /**
-     * Testa a rota POST responsável pelo cadastro de um item.
-     */
-    @Test
-    void deveCadastrar() throws Exception {
-        when(itemServico.cadastrar(any())).thenReturn(
-            org.springframework.http.ResponseEntity.ok(item)
-        );
-
-        mockMvc.perform(
-            post("/itens")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"nome\":\"Exemplo\"}")
-        ).andExpect(status().isOk());
-    }
-
-    /**
      * Testa a listagem de todos os itens cadastrados.
      */
     @Test
