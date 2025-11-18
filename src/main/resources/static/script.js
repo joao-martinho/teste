@@ -19,15 +19,20 @@ document.addEventListener("DOMContentLoaded", function(){
   const tabelaItensCorpo = modal.querySelector("tbody")
 
   let itensDoPedido = []
+  let produtosCache = [] // cache dos produtos/serviços carregados
+  let indiceItemEditando = null
 
   async function buscarProdutosServicos(){
     try{
       const r = await fetch("/produtos-servicos")
       if(!r.ok) throw new Error()
       const dados = await r.json()
-      populaTabelaProdutos(dados)
-      populaSelectItens(dados)
-    } catch(e){}
+      produtosCache = Array.isArray(dados) ? dados : []
+      populaTabelaProdutos(produtosCache)
+      populaSelectItens(produtosCache)
+    } catch(e){
+      produtosCache = []
+    }
   }
 
   function populaTabelaProdutos(dados){
@@ -45,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function(){
       tdTipo.appendChild(badgeTipo)
 
       const tdPreco = document.createElement("td")
-      tdPreco.textContent = p.preco.toFixed(2)
+      tdPreco.textContent = Number(p.preco).toFixed(2)
 
       const tdSituacao = document.createElement("td")
       const badgeSituacao = document.createElement("span")
@@ -248,7 +253,6 @@ document.addEventListener("DOMContentLoaded", function(){
 
             tr.appendChild(tdNome)
             tr.appendChild(tdTipo)
-            tr.appendChild(tdSituacao)
             tr.appendChild(tdPreco)
             tr.appendChild(tdQtd)
             tr.appendChild(tdSubtotal)
@@ -271,8 +275,8 @@ document.addEventListener("DOMContentLoaded", function(){
       verItensCorpo.appendChild(tr)
     }
 
-    const modal = new bootstrap.Modal(document.getElementById("modalVerPedido"))
-    modal.show()
+    const modalInstance = new bootstrap.Modal(document.getElementById("modalVerPedido"))
+    modalInstance.show()
   }
 
   async function excluirPedido(id){
@@ -309,6 +313,7 @@ document.addEventListener("DOMContentLoaded", function(){
     if(indiceItemEditando === null){
       itensDoPedido.push({
         id: null,
+        produtoServicoId: idProd,
         nome: nome,
         ehProduto: ehProduto,
         preco: preco,
@@ -316,15 +321,14 @@ document.addEventListener("DOMContentLoaded", function(){
       })
     } else {
       const item = itensDoPedido[indiceItemEditando]
+      item.produtoServicoId = idProd
       item.nome = nome
       item.ehProduto = ehProduto
       item.preco = preco
       item.quantidade = quantidade
-
       if (item.id) {
         item.id = null
       }
-
       indiceItemEditando = null
     }
 
@@ -354,10 +358,10 @@ document.addEventListener("DOMContentLoaded", function(){
       tdQtd.textContent = item.quantidade
 
       const tdPreco = document.createElement("td")
-      tdPreco.textContent = item.preco.toFixed(2)
+      tdPreco.textContent = Number(item.preco).toFixed(2)
 
       const tdSubtotal = document.createElement("td")
-      tdSubtotal.textContent = (item.preco * item.quantidade).toFixed(2)
+      tdSubtotal.textContent = (Number(item.preco) * item.quantidade).toFixed(2)
 
       const tdAcoes = document.createElement("td")
 
@@ -429,7 +433,8 @@ document.addEventListener("DOMContentLoaded", function(){
       desconto: descontoPercentual,
       precoBase: Number(precoBase.toFixed(2)),
       precoFinal: Number(precoFinal.toFixed(2)),
-      itens: idsAchatados
+      itens: idsAchatados,
+      estahAberto: true
     }
 
     try{
@@ -483,12 +488,20 @@ document.addEventListener("DOMContentLoaded", function(){
 
         detalhes.forEach(d => {
           if(d){
+            const qtd = counts[d.id]
+            const produtoServicoId = inferirProdutoServicoIdPorItem({
+              nome: d.nome,
+              preco: d.preco,
+              ehProduto: d.ehProduto
+            })
+
             itensDoPedido.push({
               id: d.id,
+              produtoServicoId: produtoServicoId,
               nome: d.nome,
               ehProduto: d.ehProduto,
               preco: d.preco,
-              quantidade: counts[d.id]
+              quantidade: qtd
             })
           }
         })
@@ -502,16 +515,24 @@ document.addEventListener("DOMContentLoaded", function(){
       behavior: "smooth"
     })
   }
-  let indiceItemEditando = null
 
   function iniciarEdicaoItem(indice){
     const item = itensDoPedido[indice]
     indiceItemEditando = indice
 
-    for(const opt of selectProduto.options){
-      if(opt.dataset.nome === item.nome && Number(opt.dataset.preco) === Number(item.preco)){
-        selectProduto.value = opt.value
-        break
+    if(item.produtoServicoId){
+      for(const opt of selectProduto.options){
+        if(opt.value === item.produtoServicoId){
+          selectProduto.value = opt.value
+          break
+        }
+      }
+    } else {
+      for(const opt of selectProduto.options){
+        if(opt.dataset.nome === item.nome && Number(opt.dataset.preco) === Number(item.preco)){
+          selectProduto.value = opt.value
+          break
+        }
       }
     }
 
