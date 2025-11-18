@@ -77,7 +77,7 @@
       </div>
 
       <div class="col-md-3">
-        <label class="form-label" for="desconto">Desconto (%)</label>
+        <label class="form-label" for="desconto">Desconto em produtos (%)</label>
         <input id="desconto" type="number" step="0.01" min="0" max="100"
                class="form-control" placeholder="Exemplo: 20.00" required>
         <div class="invalid-feedback">Informe um valor válido.</div>
@@ -88,6 +88,11 @@
                 data-bs-toggle="modal"
                 data-bs-target="#modalItens"
                 type="button">Itens do pedido</button>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="isFechado">
+        <label class="form-check-label" for="isFechado">Marcar como fechado</label>
       </div>
 
       <div class="col-12">
@@ -105,6 +110,7 @@
             <th>Subtotal</th>
             <th>Desconto (%)</th>
             <th>Total (R$)</th>
+            <th>Situação</th>
             <th>Ações</th>
           </tr>
         </thead>
