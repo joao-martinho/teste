@@ -7,9 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import br.com.teste.modelo.Item;
 import br.com.teste.modelo.Pedido;
-import br.com.teste.repositorio.ItemRepositorio;
 import br.com.teste.repositorio.PedidoRepositorio;
 import lombok.RequiredArgsConstructor;
 
@@ -23,9 +21,6 @@ public class PedidoServico {
 
     /** O repositório de pedidos. */
     private final PedidoRepositorio pedidoRepositorio;
-
-    /** Repositório de itens. */
-    private final ItemRepositorio itemRepositorio;
 
     /**
      * Cadastra um pedido.
