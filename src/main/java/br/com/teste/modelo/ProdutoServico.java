@@ -35,4 +35,8 @@ public class ProdutoServico {
     @NotNull
     private Float preco;
 
+    /** Representa se o objeto é produto (true) ou serviço (false). */
+    @NotNull
+    private Boolean ehProduto;
+
 }

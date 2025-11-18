@@ -122,6 +122,7 @@ public class PedidoServico {
             Pedido existente = optional.get();
 
             if (pedido.getItens() != null) existente.setItens(pedido.getItens());
+            if (pedido.getCliente() != null) existente.setCliente(pedido.getCliente());
             if (pedido.getPrecoBase() != null) existente.setPrecoBase(pedido.getPrecoBase());
             if (pedido.getDesconto() != null) existente.setDesconto(pedido.getDesconto());
 

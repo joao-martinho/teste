@@ -11,19 +11,26 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Entidade que representa um item no sistema.
+ * Armazena as informações básicas necessárias para identificação e uso.
+ */
 @Getter
 @Setter
 @Entity
 @Table(name = "itens")
 public class Item {
     
+    /** Identificador único do item. */
     @Id
     @GeneratedValue
     private UUID id;
 
+    /** Nome do item. */
     @NotBlank
     private String nome;
 
+    /** Preço do item. */
     @NotNull
     private Float preco;
 

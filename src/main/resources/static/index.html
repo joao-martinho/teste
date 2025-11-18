@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <title>Gestão de Produtos, Serviços e Pedidos</title>
+</head>
+
+<body class="bg-light">
+
+<div class="container py-5">
+
+  <div class="card shadow-sm p-4 mb-5">
+    <h4 class="mb-3 text-center">Cadastro de produto ou serviço</h4>
+
+    <form class="needs-validation" novalidate>
+
+      <div class="mb-3">
+        <label class="form-label" for="nomeProduto">Nome</label>
+        <input id="nomeProduto" type="text" class="form-control" placeholder="Nome do produto ou serviço" required>
+        <div class="invalid-feedback">Campo obrigatório.</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="precoProduto">Preço (R$)</label>
+        <input id="precoProduto" type="number" class="form-control" step="0.01" placeholder="Exemplo: 10.00" required>
+        <div class="invalid-feedback">Informe um preço válido.</div>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="isServico">
+        <label class="form-check-label" for="isServico">Marcar como serviço</label>
+      </div>
+
+      <button class="btn btn-primary w-100">Salvar</button>
+
+    </form>
+  </div>
+
+  <div class="card shadow-sm p-4 mb-5">
+    <h4 class="mb-3 text-center">Produtos e serviços cadastrados</h4>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered table-striped align-middle">
+
+        <thead class="table-dark">
+          <tr>
+            <th>Nome</th>
+            <th>Tipo</th>
+            <th>Preço (R$)</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody></tbody>
+
+      </table>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-4 mb-5">
+    <h4 class="mb-4 text-center">Cadastro de pedido</h4>
+
+    <form class="row g-3 needs-validation" novalidate>
+
+      <div class="col-md-6">
+        <label class="form-label" for="cliente">Cliente</label>
+        <input id="cliente" class="form-control" placeholder="Nome do cliente" required>
+        <div class="invalid-feedback">Campo obrigatório.</div>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label" for="desconto">Desconto (%)</label>
+        <input id="desconto" type="number" step="0.01" min="0" max="100"
+               class="form-control" value="0.00" placeholder="Exemplo: 20.00" required>
+        <div class="invalid-feedback">Informe um valor válido.</div>
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100"
+                data-bs-toggle="modal"
+                data-bs-target="#modalItens"
+                type="button">Adicionar item</button>
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-success w-100">Salvar pedido</button>
+      </div>
+
+    </form>
+
+    <div class="mt-4 table-responsive">
+      <table class="table table-bordered table-striped align-middle">
+
+        <thead class="table-dark">
+          <tr>
+            <th>Cliente</th>
+            <th>Itens</th>
+            <th>Desconto (%)</th>
+            <th>Total (R$)</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody></tbody>
+
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal fade" id="modalItens" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Itens do pedido</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <form class="row g-3 needs-validation" novalidate>
+
+          <div class="col-md-7">
+            <label class="form-label" for="selectProduto">Produto ou serviço</label>
+            <select id="selectProduto" class="form-select" required>
+              <option value="">Selecione...</option>
+            </select>
+            <div class="invalid-feedback">Selecione um item.</div>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label" for="quantidade">Quantidade</label>
+            <input id="quantidade" type="number" min="1" step="1" class="form-control" required>
+            <div class="invalid-feedback">Informe um valor válido.</div>
+          </div>
+
+          <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-primary w-100">Adicionar</button>
+          </div>
+
+        </form>
+
+        <div class="mt-4 table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Qtd.</th>
+                <th>Unitário</th>
+                <th>Subtotal</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
