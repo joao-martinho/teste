@@ -94,6 +94,7 @@ public class ProdutoServicoServico {
             if (produtoServico.getNome() != null) existente.setNome(produtoServico.getNome());
             if (produtoServico.getPreco() != null) existente.setPreco(produtoServico.getPreco());
             if (produtoServico.getEhProduto() != null) existente.setEhProduto(produtoServico.getEhProduto());
+            if (produtoServico.getEstahDesativado() != null) existente.setEstahDesativado(produtoServico.getEstahDesativado());
         
             return new ResponseEntity<>(
                 produtoServicoRepositorio.save(existente), HttpStatus.OK

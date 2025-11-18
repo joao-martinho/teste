@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function(){
   const inputNomeProduto = document.getElementById("nomeProduto")
   const inputPrecoProduto = document.getElementById("precoProduto")
   const inputIsServico = document.getElementById("isServico")
+  const inputIsInativo = document.getElementById("isInativo")
   const tabelaProdutosCorpo = document.querySelectorAll(".card")[1].querySelector("tbody")
   let produtoEditandoId = null
 
@@ -33,30 +34,45 @@ document.addEventListener("DOMContentLoaded", function(){
     tabelaProdutosCorpo.innerHTML = ""
     dados.forEach(p => {
       const tr = document.createElement("tr")
+
       const tdNome = document.createElement("td")
       tdNome.textContent = p.nome
+
       const tdTipo = document.createElement("td")
-      const badge = document.createElement("span")
-      badge.className = "badge " + (p.ehProduto ? "bg-primary" : "bg-secondary")
-      badge.textContent = p.ehProduto ? "Produto" : "Serviço"
-      tdTipo.appendChild(badge)
+      const badgeTipo = document.createElement("span")
+      badgeTipo.className = "badge " + (p.ehProduto ? "bg-primary" : "bg-secondary")
+      badgeTipo.textContent = p.ehProduto ? "Produto" : "Serviço"
+      tdTipo.appendChild(badgeTipo)
+
       const tdPreco = document.createElement("td")
-      tdPreco.textContent = Number(p.preco).toFixed(2)
+      tdPreco.textContent = p.preco.toFixed(2)
+
+      const tdSituacao = document.createElement("td")
+      const badgeSituacao = document.createElement("span")
+      badgeSituacao.className = "badge " + (p.estahDesativado ? "bg-danger" : "bg-success")
+      badgeSituacao.textContent = p.estahDesativado ? "Inativo" : "Ativo"
+      tdSituacao.appendChild(badgeSituacao)
+
       const tdAcoes = document.createElement("td")
       const btnEditar = document.createElement("button")
       btnEditar.className = "btn btn-sm btn-warning me-2"
       btnEditar.textContent = "Editar"
       btnEditar.addEventListener("click", () => iniciarEdicaoProduto(p))
+
       const btnExcluir = document.createElement("button")
       btnExcluir.className = "btn btn-sm btn-danger"
       btnExcluir.textContent = "Excluir"
       btnExcluir.addEventListener("click", () => excluirProduto(p.id))
+
       tdAcoes.appendChild(btnEditar)
       tdAcoes.appendChild(btnExcluir)
+
       tr.appendChild(tdNome)
       tr.appendChild(tdTipo)
       tr.appendChild(tdPreco)
+      tr.appendChild(tdSituacao)
       tr.appendChild(tdAcoes)
+
       tabelaProdutosCorpo.appendChild(tr)
     })
   }
@@ -83,7 +99,8 @@ document.addEventListener("DOMContentLoaded", function(){
     const payload = {
       nome: inputNomeProduto.value.trim(),
       preco: Number(inputPrecoProduto.value),
-      ehProduto: !inputIsServico.checked
+      ehProduto: !inputIsServico.checked,
+      estahDesativado: inputIsInativo.checked
     }
     try{
       if(produtoEditandoId){
@@ -113,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function(){
     inputNomeProduto.value = p.nome
     inputPrecoProduto.value = Number(p.preco).toFixed(2)
     inputIsServico.checked = !p.ehProduto
+    inputIsInativo.checked = p.estahDesativado
     window.scrollTo({top:0, behavior:"smooth"})
   }
 
@@ -230,6 +248,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             tr.appendChild(tdNome)
             tr.appendChild(tdTipo)
+            tr.appendChild(tdSituacao)
             tr.appendChild(tdPreco)
             tr.appendChild(tdQtd)
             tr.appendChild(tdSubtotal)

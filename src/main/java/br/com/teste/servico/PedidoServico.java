@@ -96,6 +96,7 @@ public class PedidoServico {
             if (pedido.getPrecoBase() != null) existente.setPrecoBase(pedido.getPrecoBase());
             if (pedido.getDesconto() != null) existente.setDesconto(pedido.getDesconto());
             if (pedido.getPrecoFinal() != null) existente.setPrecoFinal(pedido.getPrecoFinal());
+            if (pedido.getEstahAberto() != null) existente.setEstahAberto(pedido.getEstahAberto());
 
             return new ResponseEntity<>(
                 pedidoRepositorio.save(existente), HttpStatus.OK
