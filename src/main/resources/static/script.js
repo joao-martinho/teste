@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function(){
       const tdAcoes = document.createElement("td")
       const btnVer = document.createElement("button")
       btnVer.className = "btn btn-sm btn-primary me-2"
-      btnVer.textContent = "Ver"
+      btnVer.textContent = "Ver detalhes"
       btnVer.addEventListener("click", () => verPedido(p))
       const btnEditar = document.createElement("button")
       btnEditar.className = "btn btn-sm btn-warning me-2"
@@ -172,40 +172,88 @@ document.addEventListener("DOMContentLoaded", function(){
   }
 
   async function verPedido(p){
-    let texto =
-      `Cliente: ${p.cliente}\n` +
-      `Desconto: ${Number(p.desconto).toFixed(2)}%\n` +
-      `Preço base: ${Number(p.precoBase).toFixed(2)}\n` +
-      `Preço final: ${Number(p.precoFinal).toFixed(2)}\n` +
-      `Itens:\n`
+    const verCliente = document.getElementById("verCliente")
+    const verDesconto = document.getElementById("verDesconto")
+    const verBase = document.getElementById("verBase")
+    const verFinal = document.getElementById("verFinal")
+    const verItensCorpo = document.getElementById("verItensCorpo")
+
+    verCliente.textContent = p.cliente
+    verDesconto.textContent = Number(p.desconto).toFixed(2)
+    verBase.textContent = Number(p.precoBase).toFixed(2)
+    verFinal.textContent = Number(p.precoFinal).toFixed(2)
+
+    verItensCorpo.innerHTML = ""
 
     if(Array.isArray(p.itens) && p.itens.length){
-      const counts = p.itens.reduce((acc,id)=>{acc[id]=(acc[id]||0)+1; return acc},{})
+      const counts = p.itens.reduce((acc,id)=>{
+        acc[id] = (acc[id]||0) + 1
+        return acc
+      },{})
+
       const ids = Object.keys(counts)
+
       try{
-        const detalhes = await Promise.all(ids.map(async id => {
-          try{
-            const r = await fetch(`/itens/${id}`)
-            if(!r.ok) return null
-            return await r.json()
-          } catch(e){
-            return null
-          }
-        }))
+        const detalhes = await Promise.all(
+          ids.map(async id => {
+            try{
+              const r = await fetch(`/itens/${id}`)
+              if(!r.ok) return null
+              return await r.json()
+            } catch(e){
+              return null
+            }
+          })
+        )
+
         detalhes.forEach(d => {
+          const tr = document.createElement("tr")
+
           if(d){
-            const qtd = counts[d.id] || 1
-            texto += ` - ${d.nome} — ${qtd} × R$ ${Number(d.preco).toFixed(2)} = R$ ${Number((d.preco * qtd).toFixed(2))}\n`
+            const qtd = counts[d.id]
+            const subtotal = (d.preco * qtd).toFixed(2)
+
+            const tdNome = document.createElement("td")
+            tdNome.textContent = d.nome
+
+            const tdTipo = document.createElement("td")
+            tdTipo.textContent = d.ehProduto ? "Produto" : "Serviço"
+
+            const tdPreco = document.createElement("td")
+            tdPreco.textContent = Number(d.preco).toFixed(2)
+
+            const tdQtd = document.createElement("td")
+            tdQtd.textContent = qtd
+
+            const tdSubtotal = document.createElement("td")
+            tdSubtotal.textContent = subtotal
+
+            tr.appendChild(tdNome)
+            tr.appendChild(tdTipo)
+            tr.appendChild(tdPreco)
+            tr.appendChild(tdQtd)
+            tr.appendChild(tdSubtotal)
           } else {
-            texto += " - (item não encontrado)\n"
+            const td = document.createElement("td")
+            td.colSpan = 5
+            td.textContent = "(item não encontrado)"
+            tr.appendChild(td)
           }
+
+          verItensCorpo.appendChild(tr)
         })
       } catch(e){}
     } else {
-      texto += " (sem itens)\n"
+      const tr = document.createElement("tr")
+      const td = document.createElement("td")
+      td.colSpan = 5
+      td.textContent = "(sem itens)"
+      tr.appendChild(td)
+      verItensCorpo.appendChild(tr)
     }
 
-    alert(texto)
+    const modal = new bootstrap.Modal(document.getElementById("modalVerPedido"))
+    modal.show()
   }
 
   async function excluirPedido(id){
@@ -239,51 +287,86 @@ document.addEventListener("DOMContentLoaded", function(){
     const ehProduto = opt.dataset.ehproduto === "true"
     const quantidade = Math.max(1, Math.floor(Number(inputQuantidade.value) || 1))
 
-    const item = {
-      id: null,
-      nome: nome,
-      ehProduto: ehProduto,
-      preco: preco,
-      quantidade: quantidade
+    if(indiceItemEditando === null){
+      itensDoPedido.push({
+        id: null,
+        nome: nome,
+        ehProduto: ehProduto,
+        preco: preco,
+        quantidade: quantidade
+      })
+    } else {
+      const item = itensDoPedido[indiceItemEditando]
+      item.nome = nome
+      item.ehProduto = ehProduto
+      item.preco = preco
+      item.quantidade = quantidade
+
+      if (item.id) {
+        item.id = null
+      }
+
+      indiceItemEditando = null
     }
 
-    itensDoPedido.push(item)
     await renderizarTabelaItens()
 
     selectProduto.value = ""
     inputQuantidade.value = ""
     form.classList.remove("was-validated")
+
+    const modalBootstrap = bootstrap.Modal.getInstance(modal)
+    modalBootstrap.hide()
   })
 
   async function renderizarTabelaItens(){
     tabelaItensCorpo.innerHTML = ""
+
     itensDoPedido.forEach((item, idx) => {
       const tr = document.createElement("tr")
+
       const tdNome = document.createElement("td")
       tdNome.textContent = item.nome
+
       const tdTipo = document.createElement("td")
       tdTipo.textContent = item.ehProduto ? "Produto" : "Serviço"
+
       const tdQtd = document.createElement("td")
       tdQtd.textContent = item.quantidade
+
       const tdPreco = document.createElement("td")
       tdPreco.textContent = item.preco.toFixed(2)
+
       const tdSubtotal = document.createElement("td")
       tdSubtotal.textContent = (item.preco * item.quantidade).toFixed(2)
+
       const tdAcoes = document.createElement("td")
+
+      const btnEditar = document.createElement("button")
+      btnEditar.className = "btn btn-sm btn-warning me-2"
+      btnEditar.textContent = "Editar"
+      btnEditar.addEventListener("click", () => {
+        iniciarEdicaoItem(idx)
+      })
+
       const btnRemover = document.createElement("button")
       btnRemover.className = "btn btn-sm btn-danger"
-      btnRemover.textContent = "Remover"
+      btnRemover.textContent = "Excluir"
       btnRemover.addEventListener("click", () => {
         itensDoPedido.splice(idx, 1)
         renderizarTabelaItens()
       })
+
+      tdAcoes.appendChild(btnEditar)
       tdAcoes.appendChild(btnRemover)
+
       tr.appendChild(tdNome)
       tr.appendChild(tdTipo)
       tr.appendChild(tdQtd)
       tr.appendChild(tdPreco)
       tr.appendChild(tdSubtotal)
       tr.appendChild(tdAcoes)
+
       tabelaItensCorpo.appendChild(tr)
     })
   }
@@ -366,15 +449,19 @@ document.addEventListener("DOMContentLoaded", function(){
       if(Array.isArray(p.itens) && p.itens.length){
         const counts = p.itens.reduce((a,id)=>{a[id]=(a[id]||0)+1; return a},{})
         const ids = Object.keys(counts)
-        const detalhes = await Promise.all(ids.map(async id => {
-          try{
-            const r = await fetch(`/itens/${id}`)
-            if(!r.ok) return null
-            return await r.json()
-          } catch(e){
-            return null
-          }
-        }))
+
+        const detalhes = await Promise.all(
+          ids.map(async id => {
+            try{
+              const r = await fetch(`/itens/${id}`)
+              if(!r.ok) return null
+              return await r.json()
+            } catch(e){
+              return null
+            }
+          })
+        )
+
         detalhes.forEach(d => {
           if(d){
             itensDoPedido.push({
@@ -390,7 +477,29 @@ document.addEventListener("DOMContentLoaded", function(){
     } catch(e){}
 
     await renderizarTabelaItens()
-    window.scrollTo({ top: formularioPedido.offsetTop, behavior: "smooth" })
+
+    window.scrollTo({
+      top: formularioPedido.offsetTop,
+      behavior: "smooth"
+    })
+  }
+  let indiceItemEditando = null
+
+  function iniciarEdicaoItem(indice){
+    const item = itensDoPedido[indice]
+    indiceItemEditando = indice
+
+    for(const opt of selectProduto.options){
+      if(opt.dataset.nome === item.nome && Number(opt.dataset.preco) === Number(item.preco)){
+        selectProduto.value = opt.value
+        break
+      }
+    }
+
+    inputQuantidade.value = item.quantidade
+
+    const modalBootstrap = bootstrap.Modal.getOrCreateInstance(modal)
+    modalBootstrap.show()
   }
 
   formularioPedido.addEventListener("submit", function(e){

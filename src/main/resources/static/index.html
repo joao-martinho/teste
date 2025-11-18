@@ -33,7 +33,7 @@
         <label class="form-check-label" for="isServico">Marcar como serviço</label>
       </div>
 
-      <button class="btn btn-primary w-100">Salvar</button>
+      <button class="btn btn-success w-100">Salvar produto ou serviço</button>
 
     </form>
   </div>
@@ -81,7 +81,7 @@
         <button class="btn btn-primary w-100"
                 data-bs-toggle="modal"
                 data-bs-target="#modalItens"
-                type="button">Adicionar item</button>
+                type="button">Itens do pedido</button>
       </div>
 
       <div class="col-12">
@@ -139,7 +139,7 @@
           </div>
 
           <div class="col-md-2 d-flex align-items-end">
-            <button class="btn btn-primary w-100">Adicionar</button>
+            <button class="btn btn-success w-100">Salvar</button>
           </div>
 
         </form>
@@ -166,6 +166,44 @@
         <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalVerPedido" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Visualização do Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+
+        <p><strong>Cliente:</strong> <span id="verCliente"></span></p>
+        <p><strong>Desconto:</strong> <span id="verDesconto"></span>%</p>
+        <p><strong>Preço base:</strong> R$ <span id="verBase"></span></p>
+        <p><strong>Preço final:</strong> R$ <span id="verFinal"></span></p>
+
+        <hr>
+
+        <h6>Itens</h6>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>Preço</th>
+              <th>Quantidade</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="verItensCorpo"></tbody>
+        </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
     </div>
   </div>
 </div>
