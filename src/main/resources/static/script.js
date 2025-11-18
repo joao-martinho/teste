@@ -67,8 +67,8 @@ document.addEventListener("DOMContentLoaded", function(){
       const opt = document.createElement("option")
       opt.value = i.id
       opt.textContent = `${i.nome} (${i.ehProduto ? "produto" : "serviço"}) - ${Number(i.preco).toFixed(2)}`
-      opt.dataset.preco = i.preco
       opt.dataset.nome = i.nome
+      opt.dataset.preco = i.preco
       opt.dataset.ehproduto = i.ehProduto
       selectProduto.appendChild(opt)
     })
@@ -105,9 +105,7 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioProduto.reset()
       formularioProduto.classList.remove("was-validated")
       await buscarProdutosServicos()
-    } catch(err){
-      console.log("Falha ao salvar produto/serviço")
-    }
+    } catch(err){}
   })
 
   function iniciarEdicaoProduto(p){
@@ -124,9 +122,7 @@ document.addEventListener("DOMContentLoaded", function(){
       const r = await fetch(`/produtos-servicos/${id}`, {method:"DELETE"})
       if(!r.ok) throw new Error()
       await buscarProdutosServicos()
-    } catch(e){
-      console.log("Falha ao excluir produto/serviço")
-    }
+    } catch(e){}
   }
 
   async function buscarPedidos(){
@@ -182,13 +178,14 @@ document.addEventListener("DOMContentLoaded", function(){
       `Preço base: ${Number(p.precoBase).toFixed(2)}\n` +
       `Preço final: ${Number(p.precoFinal).toFixed(2)}\n` +
       `Itens:\n`
+
     if(Array.isArray(p.itens) && p.itens.length){
       const counts = p.itens.reduce((acc,id)=>{acc[id]=(acc[id]||0)+1; return acc},{})
-      const uniqueIds = Object.keys(counts)
+      const ids = Object.keys(counts)
       try{
-        const detalhes = await Promise.all(uniqueIds.map(async id => {
+        const detalhes = await Promise.all(ids.map(async id => {
           try{
-            const r = await fetch(`/produtos-servicos/${id}`)
+            const r = await fetch(`/itens/${id}`)
             if(!r.ok) return null
             return await r.json()
           } catch(e){
@@ -198,17 +195,16 @@ document.addEventListener("DOMContentLoaded", function(){
         detalhes.forEach(d => {
           if(d){
             const qtd = counts[d.id] || 1
-            texto += ` - ${d.nome} — ${qtd} × R$ ${Number(d.preco).toFixed(2)} = R$ ${Number((d.preco * qtd).toFixed(2))} (${d.ehProduto ? "produto" : "serviço"})\n`
+            texto += ` - ${d.nome} — ${qtd} × R$ ${Number(d.preco).toFixed(2)} = R$ ${Number((d.preco * qtd).toFixed(2))}\n`
           } else {
             texto += " - (item não encontrado)\n"
           }
         })
-      } catch(e){
-        texto += " (erro ao recuperar detalhes)\n"
-      }
+      } catch(e){}
     } else {
       texto += " (sem itens)\n"
     }
+
     alert(texto)
   }
 
@@ -218,9 +214,7 @@ document.addEventListener("DOMContentLoaded", function(){
       const r = await fetch(`/pedidos/${id}`, {method:"DELETE"})
       if(!r.ok) throw new Error()
       await buscarPedidos()
-    } catch(e){
-      console.log("Falha ao excluir pedido")
-    }
+    } catch(e){}
   }
 
   modal.addEventListener("show.bs.modal", function(){
@@ -230,62 +224,40 @@ document.addEventListener("DOMContentLoaded", function(){
 
   modal.querySelector("form").addEventListener("submit", async function(e){
     e.preventDefault()
-    if(!modal.querySelector("form").checkValidity()){
-      modal.querySelector("form").classList.add("was-validated")
+    const form = modal.querySelector("form")
+    if(!form.checkValidity()){
+      form.classList.add("was-validated")
       return
     }
-    const idSelecionado = selectProduto.value
-    if(!idSelecionado) return
+
+    const idProd = selectProduto.value
+    if(!idProd) return
+
+    const opt = selectProduto.selectedOptions[0]
+    const nome = opt.dataset.nome
+    const preco = Number(opt.dataset.preco)
+    const ehProduto = opt.dataset.ehproduto === "true"
     const quantidade = Math.max(1, Math.floor(Number(inputQuantidade.value) || 1))
-    for(let i = 0; i < quantidade; i++){
-      itensDoPedido.push(idSelecionado)
+
+    const item = {
+      id: null,
+      nome: nome,
+      ehProduto: ehProduto,
+      preco: preco,
+      quantidade: quantidade
     }
+
+    itensDoPedido.push(item)
     await renderizarTabelaItens()
-    modal.querySelector("form").classList.remove("was-validated")
+
     selectProduto.value = ""
     inputQuantidade.value = ""
+    form.classList.remove("was-validated")
   })
 
   async function renderizarTabelaItens(){
     tabelaItensCorpo.innerHTML = ""
-
-    const contagem = itensDoPedido.reduce((acc, id) => {
-      acc[id] = (acc[id] || 0) + 1
-      return acc
-    }, {})
-
-    const idsUnicos = Object.keys(contagem)
-
-    if(idsUnicos.length === 0) return
-
-    const detalhes = await Promise.all(
-      idsUnicos.map(async id => {
-        try{
-          const r = await fetch(`/produtos-servicos/${id}`)
-          if(!r.ok){
-            return { id, nome: "(item não encontrado)", preco: 0, ehProduto: false }
-          }
-          return await r.json()
-        } catch(e){
-          return { id, nome: "(erro ao carregar)", preco: 0, ehProduto: false }
-        }
-      })
-    )
-
-    const itensCompletos = detalhes.map(d => {
-      const qtd = contagem[d.id] || 0
-      const preco = Number(d.preco) || 0
-      return {
-        id: d.id,
-        nome: d.nome,
-        preco: preco,
-        ehProduto: d.ehProduto,
-        quantidade: qtd,
-        subtotal: Number((preco * qtd).toFixed(2))
-      }
-    })
-
-    itensCompletos.forEach((item, idx) => {
+    itensDoPedido.forEach((item, idx) => {
       const tr = document.createElement("tr")
       const tdNome = document.createElement("td")
       tdNome.textContent = item.nome
@@ -296,18 +268,15 @@ document.addEventListener("DOMContentLoaded", function(){
       const tdPreco = document.createElement("td")
       tdPreco.textContent = item.preco.toFixed(2)
       const tdSubtotal = document.createElement("td")
-      tdSubtotal.textContent = item.subtotal.toFixed(2)
+      tdSubtotal.textContent = (item.preco * item.quantidade).toFixed(2)
       const tdAcoes = document.createElement("td")
       const btnRemover = document.createElement("button")
       btnRemover.className = "btn btn-sm btn-danger"
       btnRemover.textContent = "Remover"
-
       btnRemover.addEventListener("click", () => {
-        const id = item.id
-        itensDoPedido = itensDoPedido.filter(x => x !== id)
+        itensDoPedido.splice(idx, 1)
         renderizarTabelaItens()
       })
-
       tdAcoes.appendChild(btnRemover)
       tr.appendChild(tdNome)
       tr.appendChild(tdTipo)
@@ -324,47 +293,41 @@ document.addEventListener("DOMContentLoaded", function(){
       formularioPedido.classList.add("was-validated")
       return
     }
-
-    if(itensDoPedido.length === 0){
-      return
-    }
+    if(itensDoPedido.length === 0) return
 
     const descontoPercentual = Number(inputDesconto.value) || 0
-    const contagem = itensDoPedido.reduce((acc, id) => {
-      acc[id] = (acc[id] || 0) + 1
-      return acc
-    }, {})
+    const precoBase = itensDoPedido.reduce((t, i) => t + (i.preco * i.quantidade), 0)
+    const precoFinal = precoBase * (1 - descontoPercentual / 100)
 
-    const idsUnicos = Object.keys(contagem)
-
-    const detalhes = await Promise.all(idsUnicos.map(async id => {
-      try{
-        const r = await fetch(`/produtos-servicos/${id}`)
-        if(!r.ok) return null
-        return await r.json()
-      } catch(e){
-        return null
+    const idsAchatados = []
+    for(const item of itensDoPedido){
+      if(!item.id){
+        const r = await fetch("/itens", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({
+            nome: item.nome,
+            ehProduto: item.ehProduto,
+            preco: item.preco,
+            quantidade: item.quantidade
+          })
+        })
+        if(!r.ok) throw new Error()
+        const salvo = await r.json()
+        item.id = salvo.id
       }
-    }))
 
-    const precoBasePedido = detalhes.reduce((total, d) => {
-      if(!d) return total
-      const qtd = contagem[d.id] || 0
-      return total + (Number(d.preco) * qtd)
-    }, 0)
-
-    const fatorDesconto = descontoPercentual / 100
-    const precoFinalPedido = precoBasePedido * (1 - fatorDesconto)
-
-    const itensAchatados = []
-    itensDoPedido.forEach(id => itensAchatados.push(id))
+      for(let i = 0; i < item.quantidade; i++){
+        idsAchatados.push(item.id)
+      }
+    }
 
     const payload = {
       cliente: inputCliente.value.trim(),
       desconto: descontoPercentual,
-      precoBase: Number(precoBasePedido.toFixed(2)),
-      precoFinal: Number(precoFinalPedido.toFixed(2)),
-      itens: itensAchatados
+      precoBase: Number(precoBase.toFixed(2)),
+      precoFinal: Number(precoFinal.toFixed(2)),
+      itens: idsAchatados
     }
 
     try{
@@ -390,25 +353,41 @@ document.addEventListener("DOMContentLoaded", function(){
       itensDoPedido = []
       tabelaItensCorpo.innerHTML = ""
       await buscarPedidos()
-    } catch(err){
-      console.log("Falha ao salvar pedido")
-    }
+    } catch(err){}
   }
 
   async function iniciarEdicaoPedido(p){
     pedidoEditandoId = p.id
     inputCliente.value = p.cliente
     inputDesconto.value = Number(p.desconto).toFixed(2)
-
     itensDoPedido = []
 
     try{
-      if(Array.isArray(p.itens) && p.itens.length > 0){
-        p.itens.forEach(id => itensDoPedido.push(id))
+      if(Array.isArray(p.itens) && p.itens.length){
+        const counts = p.itens.reduce((a,id)=>{a[id]=(a[id]||0)+1; return a},{})
+        const ids = Object.keys(counts)
+        const detalhes = await Promise.all(ids.map(async id => {
+          try{
+            const r = await fetch(`/itens/${id}`)
+            if(!r.ok) return null
+            return await r.json()
+          } catch(e){
+            return null
+          }
+        }))
+        detalhes.forEach(d => {
+          if(d){
+            itensDoPedido.push({
+              id: d.id,
+              nome: d.nome,
+              ehProduto: d.ehProduto,
+              preco: d.preco,
+              quantidade: counts[d.id]
+            })
+          }
+        })
       }
-    } catch(e){
-      console.error("Erro ao iniciar edição do pedido:", e)
-    }
+    } catch(e){}
 
     await renderizarTabelaItens()
     window.scrollTo({ top: formularioPedido.offsetTop, behavior: "smooth" })
