@@ -22,7 +22,7 @@ Este repositório contém a minha solução de um teste para uma vaga de desenvo
 
 ## Configuração do banco de dados
 
-Edite o arquivo `src/main/resources/application.properties` com as credenciais e a URL do seu PostgreSQL:
+Edite o arquivo `src/main/resources/application.properties` com as credenciais e a URL do seu banco de dados PostgreSQL:
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/nome_do_banco
@@ -38,13 +38,13 @@ Ajuste porta, usuário e senha conforme necessário.
 
 ### Opção A — Pela IDE
 
-1. Abra o projeto no IntelliJ, Spring Tools Suite ou VS Code.  
-2. Localize a classe principal que contém o método `public static void main`.  
-3. Execute a aplicação (Run).
+1. Abra o projeto no IntelliJ, Spring Tools Suite ou VS Code, etc;  
+2. Localize a classe principal que contém o método `public static void main`;  
+3. Execute a aplicação.
 
 ### Opção B — Via Maven (linha de comando)
 
-Na raiz do projeto:
+No diretório raiz do projeto:
 
 ```bash
 mvn spring-boot:run
@@ -62,7 +62,7 @@ O back-end ficará disponível em:
 
 ## Testes automatizados
 
-Execute todos os testes (unitários e de integração) com Maven:
+Execute todos os testes com o Maven:
 
 ```bash
 mvn test
