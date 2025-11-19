@@ -6,16 +6,19 @@ Este repositório contém a minha solução de um teste para uma vaga de desenvo
 
 - **Java 17** ou superior  
   Verifique a instalação:  
+
   ```bash
   java -version
   ```
 - **Maven**  
   Verifique a instalação:  
+
   ```bash
   mvn -version
   ```
 - **PostgreSQL**  
   Instale e crie um banco de dados para o projeto. No `psql`:
+
   ```sql
   CREATE DATABASE nome_do_banco;
   ```
@@ -39,7 +42,7 @@ Ajuste porta, usuário e senha conforme necessário.
 ### Opção A — Pela IDE
 
 1. Abra o projeto no IntelliJ, Spring Tools Suite ou VS Code, etc;  
-2. Localize a classe principal que contém o método `public static void main`;  
+2. Localize a classe principal, que contém o método `public static void main`;  
 3. Execute a aplicação.
 
 ### Opção B — Via Maven (linha de comando)
@@ -57,8 +60,7 @@ mvn clean package
 java -jar target/nomedoarquivo.jar
 ```
 
-O back-end ficará disponível em:  
-**http://localhost:8080**
+O back-end ficará disponível em **http://localhost:8080**.
 
 ## Testes automatizados
 
